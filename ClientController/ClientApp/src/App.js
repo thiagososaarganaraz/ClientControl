@@ -16,7 +16,7 @@ const App = () => {
         let options = { year: 'numeric', month: 'long', day: 'numeric' };
         let fecha = new Date(string).toLocaleDateString("es-AR", options);
         let hora = new Date(string).toLocaleTimeString();
-        return fecha + " | " + hora;
+        return fecha;
     }
 
     const showClients = async () => {
@@ -38,22 +38,25 @@ const App = () => {
     }, [])
 
     return (
-        <div className="container bg-dark p-4 vh-100">
-            <h2 className="text-white">{modal ? "Nuevo Cliente" : "Clientes"}</h2>
+        <div className="container bg-dark p-4 vw-100">
+            <div className="bg-light text-center rounded-pill p-2 mb-4">
+                <h2 className="text-dark">RV Prestamos</h2>
+            </div>
+            <h3 className="text-light">{modal ? "Nuevo Cliente" : "Clientes"}</h3>
             <div className="row mt-4">
                 {modal ? <NewClient showClients={showClients} /> : ""}
                 <div className="d-flex">
-                    <button className="mx-auto" onClick={handleOpen}>{!modal ? "Nuevo Cliente" : "Cerrar"}</button>
+                    <button className="btn btn-light mx-auto p-3 px-4" onClick={handleOpen}>{!modal ? "Nuevo Cliente" : "Cerrar"}</button>
                 </div>
                 <div className="col-sm-12 pt-4">
                     <div className="list-group">
                         {clients.map((client) => (
                             <div key={ client.idCliente} className="list-group-item list-group-item-action">
-                                <h5 className="text-primary">{client.nombre}</h5>
+                                <h3 className="text-primary">{client.nombre}</h3>
                                 <div className="d-flex justify-content-between">
-                                    <small className="text-muted">{formatDate(client.vencimiento)}</small>
-                                    <h4 className="text-secondary">${client.deuda}</h4>
-                                    <button className="btn btn-sm btn-outline-danger" onClick={()=> deleteClient(client.idCliente)}>Eliminar</button>
+                                    <h5 className="text-danger">{formatDate(client.vencimiento)}</h5>
+                                    <h4 className="text-dark">${client.deuda}</h4>
+                                    <button className="btn btn-lg btn-outline-danger" onClick={()=> deleteClient(client.idCliente)}>Eliminar</button>
                                 </div>
                             </div>
                         ))}

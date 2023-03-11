@@ -3,13 +3,21 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const NewClient = ({ showClients }) => {
+    const date = new Date();
+    const datePlusMonth = new Date(date);
+    datePlusMonth.setMonth(datePlusMonth.getMonth() + 1);
+
     const [input, setInput] = useState({
         nombre: "",
         deuda: "",
-        vencimiento: "",
+        vencimiento: datePlusMonth.toISOString().split('T')[0],
         descripcion: "",
         cbu: "",
         clave: "",
+        fechaCobro: date.toISOString().split('T')[0],
+        fechaPrestamo: date.toISOString().split('T')[0],
+        interes: "20",
+        tarjeta: "",
     });
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -27,10 +35,13 @@ const NewClient = ({ showClients }) => {
             !input.nombre.length
             || !input.deuda.length
             || !input.vencimiento.length
-            || !input.descripcion.length
             || !input.cbu.length
             || !input.clave.length
-        ) return false;
+            || !input.interes.length
+            || !input.tarjeta.length
+        ) {
+            return false
+        };
         try {
             const res = await axios("api/clients/Lista");
             const data = res.data;
@@ -106,7 +117,25 @@ const NewClient = ({ showClients }) => {
                     <label className="label label-default" style={{ color: "white" }}>Clave</label>
                     <input name="clave" type="text" className="form-control" value={input.clave} onChange={(e) => handleChange(e)} placeholder="Clave" />
                 </div>
-                <button className="btn btn-primary mx-auto" onClick={handleSubmit}>Guardar</button>
+                <div className="form-group">
+                    <label className="label label-default" style={{ color: "white" }}>Fecha de Cobro</label>
+                    <input name="fechaCobro" type="date" className="form-control" value={input.fechaCobro} onChange={(e) => handleChange(e)} placeholder="Fecha de Cobro" />
+                </div>
+                <div className="form-group">
+                    <label className="label label-default" style={{ color: "white" }}>Fecha de Prestamo</label>
+                    <input name="fechaPrestamo" type="date" className="form-control" value={input.fechaPrestamo} onChange={(e) => handleChange(e)} placeholder="Fecha de Prestamo" />
+                </div>
+                <div className="form-group">
+                    <label className="label label-default" style={{ color: "white" }}>Interes</label>
+                    <input name="interes" type="number" className="form-control" value={input.interes} onChange={(e) => handleChange(e)} placeholder="Interes" />
+                </div>
+                <div className="form-group">
+                    <label className="label label-default" style={{ color: "white" }}>Tarjeta</label>
+                    <input name="tarjeta" type="text" className="form-control" value={input.tarjeta} onChange={(e) => handleChange(e)} placeholder="Tarjeta" />
+                </div>
+                <div className="d-flex">
+                    <button className="btn btn-success mx-auto m-4 px-4" onClick={handleSubmit}>Guardar</button>
+                </div>
             </form>
             {error ? <div className="alert alert-danger">{message}</div> : ""}
             {success ? <div className="alert alert-success">{message}</div> : ""}

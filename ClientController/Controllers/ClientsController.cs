@@ -19,7 +19,7 @@ namespace ClientController.Controllers
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
-            List<Cliente> lista = _dbcontext.Clientes.OrderByDescending(c => c.Nombre).ThenBy(c => c.Vencimiento).ToList();
+            List<Cliente> lista = _dbcontext.Clientes.OrderByDescending(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
 
             return StatusCode(StatusCodes.Status200OK, lista);
         }

@@ -14,5 +14,9 @@ namespace ClientController.Models
         public string? Descripcion { get; set; }
         public string? Cbu { get; set; }
         public int? Clave { get; set; }
+        public DateTime? FechaCobro { get; set; }
+        public DateTime? FechaPrestamo { get; set; }
+        public int? Interes { get; set; }
+        public string? Tarjeta { get; set; }
     }
 }
