@@ -16,7 +16,7 @@ const NewClient = ({ showClients }) => {
         clave: "",
         fechaCobro: date.toISOString().split('T')[0],
         fechaPrestamo: date.toISOString().split('T')[0],
-        interes: "20",
+        interes: "",
         tarjeta: "",
     });
     const [error, setError] = useState(false);
@@ -132,6 +132,10 @@ const NewClient = ({ showClients }) => {
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Tarjeta</label>
                     <input name="tarjeta" type="text" className="form-control" value={input.tarjeta} onChange={(e) => handleChange(e)} placeholder="Tarjeta" />
+                </div>
+                <div className="form-group">
+                    <label className="label label-default" style={{ color: "white" }}>Cuotas</label>
+                    <input name="cuotas" type="number" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
                 </div>
                 <div className="d-flex">
                     <button className="btn btn-success mx-auto m-4 px-4" onClick={handleSubmit}>Guardar</button>

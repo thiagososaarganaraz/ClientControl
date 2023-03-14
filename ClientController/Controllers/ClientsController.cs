@@ -19,7 +19,7 @@ namespace ClientController.Controllers
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
-            List<Cliente> lista = _dbcontext.Clientes.OrderByDescending(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
+            List<Cliente> lista = _dbcontext.Clientes.OrderBy(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
 
             return StatusCode(StatusCodes.Status200OK, lista);
         }
@@ -41,6 +41,16 @@ namespace ClientController.Controllers
             _dbcontext.Clientes.Remove(client);
             await _dbcontext.SaveChangesAsync();
             return StatusCode(StatusCodes.Status200OK, "ok");
+        }
+
+        [HttpPut]
+        [Route("Modificar/{id:int}")]
+        public async Task<IActionResult> Modificar(int id, [FromBody] Cliente clienteNuevo)
+        {
+            Cliente client = _dbcontext.Clientes.Find(id);
+            client.Vencimiento = clienteNuevo.Vencimiento;
+            await _dbcontext.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status200OK, client);
         }
     }
 }
