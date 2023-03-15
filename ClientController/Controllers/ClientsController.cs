@@ -48,9 +48,10 @@ namespace ClientController.Controllers
         public async Task<IActionResult> Modificar(int id, [FromBody] Cliente clienteNuevo)
         {
             Cliente client = _dbcontext.Clientes.Find(id);
-            client.Vencimiento = clienteNuevo.Vencimiento;
+            if (client == null) return NotFound();
+            _dbcontext.Entry(client).CurrentValues.SetValues(clienteNuevo);
             await _dbcontext.SaveChangesAsync();
-            return StatusCode(StatusCodes.Status200OK, client);
+            return Ok(client);
         }
     }
 }

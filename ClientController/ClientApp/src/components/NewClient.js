@@ -18,6 +18,7 @@ const NewClient = ({ showClients }) => {
         fechaPrestamo: date.toISOString().split('T')[0],
         interes: "",
         tarjeta: "",
+        cuotas: 0,
     });
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
