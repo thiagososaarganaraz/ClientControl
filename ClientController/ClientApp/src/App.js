@@ -1,16 +1,52 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../../../../../../../node_modules/axios/index";
 import NewClient from "./components/NewClient";
 
 const App = () => {
 
-    const [clients, setClients] = useState([]);
     const [modal, setModal] = useState(false);
     const [monto, setMonto] = useState(0);
+    const [clients, setClients] = useState([]);
 
     const handleOpen = () => {
         setModal(!modal);
+    }
+
+    const handleChange = (e) => {
+        e.preventDefault();
+        setMonto(e.target.value);
+        console.log(monto);
+    }
+
+    const saldarMonto = async (client, monto) => {
+        const total = (client.deuda + ((client.interes / 100) * client.deuda));
+        if (monto > total) {
+            console.log("El monto ingresado es mayor a la deuda.");
+            return;
+        }
+        client.deuda = total - monto;
+        const newDate = new Date(client.vencimiento);
+        newDate.setMonth(newDate.getMonth() + 1);
+        client.vencimiento = newDate;
+        const res = await axios.put("api/clients/Modificar/" + client.idCliente, client);
+        if (res.status === 200) {
+            console.log("Se edito con exito.", res.data);
+            showClients();
+        }
+    }
+
+    const saldarInteres = async (client) => {
+        const newDate = new Date(client.vencimiento);
+        newDate.setMonth(newDate.getMonth() + 1);
+        client.vencimiento = newDate;
+        await axios.put("api/clients/Modificar/" + client.idCliente, client);
+        showClients();
+    }
+
+    const showClients = async () => {
+        const res = await axios("api/clients/Lista");
+        setClients(res.data);
     }
 
     const formatDate = (string) => {
@@ -20,49 +56,15 @@ const App = () => {
         return fecha[0];
     }
 
-    const saldarInteres = async (client) => {
-        const newDate = new Date(client.vencimiento);
-        console.log("FECHA ACTUAL: " + client.vencimiento);
-        newDate.setMonth(newDate.getMonth() + 1);
-        client.vencimiento = newDate;
-        await axios.put("api/clients/Modificar/" + client.idCliente, client);
-        showClients();
-    }
-
-    const saldarMonto = async (client) => {
-        client.deuda = (client.deuda + ((client.interes / 100) * client.deuda)) - monto;
-        const newDate = new Date(client.vencimiento);
-        newDate.setMonth(newDate.getMonth() + 1);
-        client.vencimiento = newDate;
-        const res = await axios.put("api/clients/Modificar/" + client.idCliente, client);
-        if (res.status === 200) {
-            console.log("Se edito con exito.", res.data);
-        }
-        showClients();
-    }
-
-    const showClients = async () => {
-        const res = await axios("api/clients/Lista");
-
-        if (res.status === 200) setClients(res.data);
-        console.log(res);
-    }
-
     const deleteClient = async (id) => {
-        const res = await axios.delete("api/clients/Eliminar/" + id);
+        await axios.delete("api/clients/Eliminar/" + id);
         //if (res.status === 200);
         //Mostrar snackbar personalizado diciendo que se eliminó el cliente correctamente.
         showClients();
     }
 
-    const handleChange = (e) => {
-        e.preventDefault();
-        setMonto(e.target.value);
-        console.log(monto);
-    }
-
     useEffect(() => {
-        showClients();
+        showClients(setClients);
     }, [])
 
     return (
@@ -78,7 +80,7 @@ const App = () => {
                 </div>
                 <div className="col-12 pt-4">
                     <div className="list-group">
-                        {clients.length ? clients.map((client) => (
+                        {clients.length ? clients?.map((client) => (
                             <div key={client.idCliente} id="list-container" className="list-group-item list-group-item-action p-1">
                                 <div className="d-flex flex-column flex-md-row mx-auto">
                                     <div className="d-flex w-100 justify-content-around">
@@ -101,7 +103,7 @@ const App = () => {
                                     </div>
                                     <div className="d-flex w-100 justify-content-between mt-2">
                                         <input name="monto" value={monto} onChange={(e)=> handleChange(e)} className="form-control form-control-sm mr-2 mb-2 mb-md-0" placeholder="Monto a saldar" />
-                                        <button className="btn btn-sm btn-outline-dark mb-2 mb-md-0" onClick={()=> saldarMonto(client)}>Saldar</button>
+                                        <button className="btn btn-sm btn-outline-dark mb-2 mb-md-0" onClick={()=> saldarMonto(client,monto)}>Saldar</button>
                                         <button className="btn btn-sm btn-outline-success ml-md-auto mb-2 mb-md-0" onClick={() => saldarInteres(client)}>Saldar Interes</button>
                                         <button type="button" className="btn btn-sm btn-outline-danger mb-2 mb-md-0" onClick={() => deleteClient(client.idCliente)}>X</button>
                                     </div>

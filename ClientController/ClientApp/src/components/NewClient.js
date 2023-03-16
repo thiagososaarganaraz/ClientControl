@@ -16,7 +16,7 @@ const NewClient = ({ showClients }) => {
         clave: "",
         fechaCobro: date.toISOString().split('T')[0],
         fechaPrestamo: date.toISOString().split('T')[0],
-        interes: "",
+        interes: 40,
         tarjeta: "",
         cuotas: 0,
     });
@@ -32,18 +32,19 @@ const NewClient = ({ showClients }) => {
     }
 
     const validator = async (input) => {
+        console.log("entra a validar");
         if (
             !input.nombre.length
             || !input.deuda.length
             || !input.vencimiento.length
             || !input.cbu.length
             || !input.clave.length
-            || !input.interes.length
             || !input.tarjeta.length
         ) {
             return false
         };
         try {
+            console.log("entra a verifica si existe otro igual")
             const res = await axios("api/clients/Lista");
             const data = res.data;
             for (let i = 0; i < data.length; i++) {
@@ -100,7 +101,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Deuda</label>
-                    <input name="deuda" type="number" className="form-control" value={input.deuda} onChange={(e) => handleChange(e)} placeholder="Deuda" />
+                    <input name="deuda" type="text" className="form-control" value={input.deuda} onChange={(e) => handleChange(e)} placeholder="Deuda" />
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Vencimiento</label>
@@ -128,7 +129,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Interes</label>
-                    <input name="interes" type="number" className="form-control" value={input.interes} onChange={(e) => handleChange(e)} placeholder="Interes" />
+                    <input name="interes" type="text" className="form-control" value={input.interes} onChange={(e) => handleChange(e)} placeholder="Interes" />
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Tarjeta</label>
@@ -136,7 +137,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Cuotas</label>
-                    <input name="cuotas" type="number" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
+                    <input name="cuotas" type="text" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
                 </div>
                 <div className="d-flex">
                     <button className="btn btn-success mx-auto m-4 px-4" onClick={handleSubmit}>Guardar</button>
