@@ -18,7 +18,7 @@ namespace ClientController.Models
         public DateTime? FechaPrestamo { get; set; }
         public int? Interes { get; set; }
         public string? Tarjeta { get; set; }
-        public int? Total { get; set; }
         public int? Cuotas { get; set; }
+        public int? Resto { get; set; }
     }
 }

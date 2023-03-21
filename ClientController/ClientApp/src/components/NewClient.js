@@ -7,19 +7,22 @@ const NewClient = ({ showClients }) => {
     const datePlusMonth = new Date(date);
     datePlusMonth.setMonth(datePlusMonth.getMonth() + 1);
 
-    const [input, setInput] = useState({
+    const initialInput = {
         nombre: "",
-        deuda: "",
+        deuda: 0,
         vencimiento: datePlusMonth.toISOString().split('T')[0],
         descripcion: "",
         cbu: "",
         clave: "",
         fechaCobro: date.toISOString().split('T')[0],
         fechaPrestamo: date.toISOString().split('T')[0],
-        interes: "",
+        interes: "40",
         tarjeta: "",
         cuotas: 0,
-    });
+        resto: 0,
+    }
+
+    const [input, setInput] = useState(initialInput);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
     const [message, setMessage] = useState("");
@@ -36,7 +39,6 @@ const NewClient = ({ showClients }) => {
             !input.nombre.length
             || !input.deuda.length
             || !input.vencimiento.length
-            || !input.cbu.length
             || !input.clave.length
             || !input.interes.length
             || !input.tarjeta.length
@@ -71,6 +73,7 @@ const NewClient = ({ showClients }) => {
             if (res.status === 200) {
                 setMessage(messages.successSavingClient);
                 setSuccess(true);
+                setInput(initialInput);
                 showClients();
                 setTimeout(() => {
                     setSuccess(false);
@@ -100,7 +103,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Deuda</label>
-                    <input name="deuda" type="number" className="form-control" value={input.deuda} onChange={(e) => handleChange(e)} placeholder="Deuda" />
+                    <input name="deuda" type="text" className="form-control" value={input.deuda} onChange={(e) => handleChange(e)} placeholder="Deuda" />
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Vencimiento</label>
@@ -128,7 +131,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Interes</label>
-                    <input name="interes" type="number" className="form-control" value={input.interes} onChange={(e) => handleChange(e)} placeholder="Interes" />
+                    <input name="interes" type="text" className="form-control" value={input.interes} onChange={(e) => handleChange(e)} placeholder="Interes" />
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Tarjeta</label>
@@ -136,7 +139,7 @@ const NewClient = ({ showClients }) => {
                 </div>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Cuotas</label>
-                    <input name="cuotas" type="number" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
+                    <input name="cuotas" type="text" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
                 </div>
                 <div className="d-flex">
                     <button className="btn btn-success mx-auto m-4 px-4" onClick={handleSubmit}>Guardar</button>
