@@ -2,12 +2,18 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import NewClient from "./components/NewClient";
+import UpdateClient from "./components/UpdateClient";
 
 const App = () => {
 
     const [clients, setClients] = useState([]);
     const [modal, setModal] = useState(false);
+    const [updateModal, setUpdateModal] = useState(false);
+    const [currentClient, setCurrentClient] = useState(null);
     const [monto, setMonto] = useState(0);
+    //Sort TRUE means it will be sorted by expiring date. FALSE is by name.
+    const [sort, setSort] = useState(true);
+
     const todayDate = new Date().toISOString().split('T')[0];
     console.log(todayDate);
 
@@ -55,9 +61,17 @@ const App = () => {
 
     const showClients = async () => {
         const res = await axios("api/clients/Lista");
+        if (res.status === 200) {
+            if (sort) {
+                //Cuando sort es true solo guardamos la lista que trajimos, la cual por defecto está ordenada por la clave vencimiento
+                setClients(res.data);
+            } else {
+                //Ordenamos utilizando sort comparando las claves "nombre" del array de objetos
+                const sorted = res.data.sort((a, b) => a.nombre.toLowerCase() < b.nombre.toLowerCase() ? -1 : ((b.nombre.toLowerCase() > a.nombre.toLowerCase()) ? 1 : 0));
+                setClients(sorted);
+            }
+        };
 
-        if (res.status === 200) setClients(res.data);
-        console.log(res.data);
     }
 
     const deleteClient = async (id) => {
@@ -67,28 +81,52 @@ const App = () => {
         showClients();
     }
 
+    const handleUpdate = (client, e) => {
+        e.preventDefault();
+        setCurrentClient(client);
+        setUpdateModal(true);
+        console.log(client);
+    }
+
     const handleChange = (e) => {
         e.preventDefault();
         setMonto(e.target.value);
         console.log(monto);
     }
 
+    const handleSort = () => {
+        setSort(!sort);
+    }
+
     useEffect(() => {
         showClients();
     }, [])
 
+    useEffect(() => {
+        showClients();
+    }, [sort])
+
     return (
         <div className="container bg-dark p-4 vw-100">
             <div className="bg-light text-center rounded-pill p-2 mb-4">
-                <h2 className="text-dark">RV Prestamos</h2>
+                <h2 className="text-dark">Prestamos</h2>
             </div>
-            <h3 className="text-light">{modal ? "Nuevo Cliente" : "Clientes"}</h3>
+            <h3 className="text-light">Clientes</h3>
+            <div className="d-flex">
+                <button className="btn btn-light mx-auto p-3 px-4" onClick={handleOpen}>{!modal ? "Nuevo Cliente" : "Cerrar"}</button>
+            </div>
             <div className="row mt-4">
+                {updateModal && currentClient ? <UpdateClient
+                    client={currentClient}
+                    showClients={showClients}
+                    modal={setUpdateModal}
+                    onClose={() => setCurrentClient(null)}
+                /> : ""}
                 {modal ? <NewClient showClients={showClients} /> : ""}
-                <div className="d-flex">
-                    <button className="btn btn-light mx-auto p-3 px-4" onClick={handleOpen}>{!modal ? "Nuevo Cliente" : "Cerrar"}</button>
-                </div>
                 <div className="col-12 pt-4">
+                    <nav className="d-flex justify-content-center">
+                        <button type="button" className="btn border text-light mb-2" onClick={handleSort}>Ordenar por: <b>{sort ? "vencimiento" : "nombre"}</b></button>
+                    </nav>
                     <div className="list-group">
                         {clients.length ? clients?.map((client, index) => (
                             <div key={client.idCliente} id="list-container" className={client.vencimiento <= todayDate ? "list-group-item list-group-item-action p-2 border-3 border-danger m-1" : "list-group-item list-group-item-action p-2 m-1"}>
@@ -123,7 +161,7 @@ const App = () => {
                                         <input key={index} name="monto" value={client.value} onChange={(e)=> handleChange(e)} className="form-control form-control-sm mr-2 mb-2 mb-md-0" placeholder="Monto a saldar" />
                                         <button className="btn btn-sm btn-outline-dark mb-2 mb-md-0" onClick={()=> saldarMonto(client)}>Saldar</button>
                                         <button className="btn btn-sm btn-outline-success ml-md-auto mb-2 mb-md-0" onClick={() => saldarInteres(client)}>Renovar</button>
-                                        <button className="btn btn-sm btn-outline-info ml-md-auto mb-2 mb-md-0">Editar</button>
+                                        <button type="button" className="btn btn-sm btn-outline-info ml-md-auto mb-2 mb-md-0" onClick={(e)=>handleUpdate(client, e)}>Editar</button>
                                         <button type="button" className="btn btn-sm btn-outline-danger mb-2 mb-md-0" onClick={() => deleteClient(client.idCliente)}>X</button>
                                     </div>
                                 </div>

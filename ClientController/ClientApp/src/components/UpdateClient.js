@@ -1,25 +1,23 @@
-import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 
-const NewClient = ({ showClients }) => {
-    const date = new Date();
-    const datePlusMonth = new Date(date);
-    datePlusMonth.setMonth(datePlusMonth.getMonth() + 1);
+const UpdateClient = ({ showClients, client, setUpdateModal }) => {
+    console.log(client);
 
     const initialInput = {
-        nombre: "",
-        deuda: 0,
-        vencimiento: datePlusMonth.toISOString().split('T')[0],
-        descripcion: "",
-        cbu: "",
-        clave: "",
-        fechaCobro: date.toISOString().split('T')[0],
-        fechaPrestamo: date.toISOString().split('T')[0],
-        interes: "40",
-        tarjeta: "",
-        cuotas: 0,
-        resto: 0,
+        nombre: client.nombre,
+        deuda: client.deuda,
+        vencimiento: client.vencimiento,
+        descripcion: client.descripcion,
+        cbu: client.cbu,
+        clave: client.clave,
+        fechaCobro: client.fechaCobro,
+        fechaPrestamo: client.fechaPrestamo,
+        interes: client.interes,
+        tarjeta: client.tarjeta,
+        cuotas: client.cuotas,
+        resto: client.resto,
     }
 
     const [input, setInput] = useState(initialInput);
@@ -28,9 +26,9 @@ const NewClient = ({ showClients }) => {
     const [message, setMessage] = useState("");
 
     const messages = {
-        successSavingClient: "Se ha guardado el cliente correctamente",
+        successSavingClient: "Se ha editado el cliente correctamente",
         errorEmpty: "Por favor rellene todos los campos!",
-        errorNewClient: "No se ha podido guardar el cliente",
+        errorNewClient: "No se ha podido editar el cliente",
         errorDeletingClient: "No se ha podido eliminar el cliente",
     }
 
@@ -65,11 +63,16 @@ const NewClient = ({ showClients }) => {
         });
     };
 
+    const handleClose = () => {
+        setUpdateModal(false);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const validation = await validator(input);
         if (validation) {
-            const res = await axios.post("api/clients/Guardar", input);
+            const res = await axios.put("api/clients/Modificar/" + client.idCliente, client);
+            console.log(res);
             if (res.status === 200) {
                 setMessage(messages.successSavingClient);
                 setSuccess(true);
@@ -96,7 +99,7 @@ const NewClient = ({ showClients }) => {
 
     return (
         <div>
-            <h3 className="text-center mt-2 text-white">Nuevo Cliente</h3>
+            <h3 className="text-center mt-2 text-white">Editar Cliente</h3>
             <form>
                 <div className="form-group">
                     <label className="label label-default" style={{ color: "white" }}>Nombre</label>
@@ -143,7 +146,8 @@ const NewClient = ({ showClients }) => {
                     <input name="cuotas" type="text" className="form-control" value={input.cuotas} onChange={(e) => handleChange(e)} placeholder="Cuotas" />
                 </div>
                 <div className="d-flex flex-column">
-                    <button className="btn btn-success mx-auto m-4 px-4" onClick={handleSubmit}>Guardar</button>
+                    <button className="btn btn-success mx-auto mt-2 px-4" onClick={handleSubmit}>Guardar</button>
+                    <button className="btn btn-danger mx-auto mt-2 px-4" onClick={handleClose}>Cerrar</button>
                 </div>
             </form>
             {error ? <div className="alert alert-danger">{message}</div> : ""}
@@ -152,4 +156,4 @@ const NewClient = ({ showClients }) => {
     )
 }
 
-export default NewClient;
+export default UpdateClient;
