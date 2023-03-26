@@ -13,9 +13,52 @@ const App = () => {
     const [monto, setMonto] = useState(0);
     //Sort TRUE means it will be sorted by expiring date. FALSE is by name.
     const [sort, setSort] = useState(true);
+    const [search, setSearch] = useState("");
+    const [found, setFound] = useState([]);
+
+    const renderClients = (clients) => {
+        return clients?.map((client, index) => (
+            <div key={client.idCliente} id="list-container" className={client.vencimiento <= todayDate ? "list-group-item list-group-item-action p-2 border-3 border-danger m-1" : "list-group-item list-group-item-action p-2 m-1"}>
+                <div className="d-flex flex-column flex-md-row mx-auto">
+                    <div className="d-flex w-100 justify-content-around">
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Vencimiento:</h6>
+                            <h6 className="text-danger my-2 flex-md-1 my-auto">{formatDate(client.vencimiento)}</h6>
+                        </div>
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Nombre:</h6>
+                            <h5 className="text-primary my-2 flex-md-1 mx-2 my-auto">{client.nombre}</h5>
+                        </div>
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Monto:</h6>
+                            <h6 className="text-dark my-2 flex-md-1 mx-2 my-auto">${client.deuda}</h6>
+                        </div>
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Interes:</h6>
+                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">{client.interes}%</h6>
+                        </div>
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Saldo:</h6>
+                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">${client.resto}</h6>
+                        </div>
+                        <div className="d-flex flex-column text-center">
+                            <h6 className="text-secondary my-auto text-wrap">Total:</h6>
+                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">${client.deuda + ((client.interes / 100) * client.deuda) + client.resto}</h6>
+                        </div>
+                    </div>
+                    <div className="d-flex w-100 justify-content-between mt-2">
+                        <input key={index} name="monto" value={client.value} onChange={(e) => handleChange(e)} className="form-control form-control-sm mr-2 mb-2 mb-md-0" placeholder="Monto a saldar" />
+                        <button className="btn btn-sm btn-outline-dark mb-2 mb-md-0" onClick={() => saldarMonto(client)}>Saldar</button>
+                        <button className="btn btn-sm btn-outline-success ml-md-auto mb-2 mb-md-0" onClick={() => saldarInteres(client)}>Renovar</button>
+                        <button type="button" className="btn btn-sm btn-outline-info ml-md-auto mb-2 mb-md-0" onClick={(e) => handleUpdate(client, e)}>Editar</button>
+                        <button type="button" className="btn btn-sm btn-outline-danger mb-2 mb-md-0" onClick={() => deleteClient(client.idCliente)}>X</button>
+                    </div>
+                </div>
+            </div>
+        ));
+    }
 
     const todayDate = new Date().toISOString().split('T')[0];
-    console.log(todayDate);
 
     const handleOpen = () => {
         setModal(!modal);
@@ -85,26 +128,41 @@ const App = () => {
         e.preventDefault();
         setCurrentClient(client);
         setUpdateModal(true);
-        console.log(client);
     }
 
     const handleChange = (e) => {
         e.preventDefault();
         setMonto(e.target.value);
-        console.log(monto);
     }
 
     const handleSort = () => {
         setSort(!sort);
     }
 
-    useEffect(() => {
-        showClients();
-    }, [])
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+    }
 
+    //Muestra todos los clientes al primer renderizado
     useEffect(() => {
         showClients();
-    }, [sort])
+        console.log(clients);
+    }, []);
+
+    //Muestra los clientes segun cambie el sort (por vencimiento o por nombre)
+    useEffect(() => {
+        showClients();
+    }, [sort]);
+
+    //Muestra los clientes encontrados al usar el buscador
+    useEffect(() => {
+        if (search) {
+            clients.map((e) => {
+                if(e.nombre.toLowerCase().includes(search.toLowerCase())) setFound(e);
+            })
+            console.log(found);
+        }
+    }, [search]);
 
     return (
         <div className="container bg-dark p-4 vw-100">
@@ -124,52 +182,18 @@ const App = () => {
                 /> : ""}
                 {modal ? <NewClient showClients={showClients} /> : ""}
                 <div className="col-12 pt-4">
+                    <input className="form-control mb-2" placeholder="Buscar por nombre..." onChange={(e)=> handleSearch(e)} value={search}/>
                     <nav className="d-flex justify-content-center">
                         <button type="button" className="btn border text-light mb-2" onClick={handleSort}>Ordenar por: <b>{sort ? "vencimiento" : "nombre"}</b></button>
                     </nav>
                     <div className="list-group">
-                        {clients.length ? clients?.map((client, index) => (
-                            <div key={client.idCliente} id="list-container" className={client.vencimiento <= todayDate ? "list-group-item list-group-item-action p-2 border-3 border-danger m-1" : "list-group-item list-group-item-action p-2 m-1"}>
-                                <div className="d-flex flex-column flex-md-row mx-auto">
-                                    <div className="d-flex w-100 justify-content-around">
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Vencimiento:</h6>
-                                            <h6 className="text-danger my-2 flex-md-1 my-auto">{formatDate(client.vencimiento)}</h6>
-                                        </div>
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Nombre:</h6>
-                                            <h5 className="text-primary my-2 flex-md-1 mx-2 my-auto">{client.nombre}</h5>
-                                        </div>
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Monto:</h6>
-                                            <h6 className="text-dark my-2 flex-md-1 mx-2 my-auto">${client.deuda}</h6>
-                                        </div>
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Interes:</h6>
-                                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">{client.interes}%</h6>
-                                        </div>
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Saldo:</h6>
-                                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">${client.resto}</h6>
-                                        </div>
-                                        <div className="d-flex flex-column text-center">
-                                            <h6 className="text-secondary my-auto text-wrap">Total:</h6>
-                                            <h6 className="text-dark my-2 flex-md-1 mx-1 my-auto">${client.deuda + ((client.interes / 100) * client.deuda) + client.resto}</h6>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex w-100 justify-content-between mt-2">
-                                        <input key={index} name="monto" value={client.value} onChange={(e)=> handleChange(e)} className="form-control form-control-sm mr-2 mb-2 mb-md-0" placeholder="Monto a saldar" />
-                                        <button className="btn btn-sm btn-outline-dark mb-2 mb-md-0" onClick={()=> saldarMonto(client)}>Saldar</button>
-                                        <button className="btn btn-sm btn-outline-success ml-md-auto mb-2 mb-md-0" onClick={() => saldarInteres(client)}>Renovar</button>
-                                        <button type="button" className="btn btn-sm btn-outline-info ml-md-auto mb-2 mb-md-0" onClick={(e)=>handleUpdate(client, e)}>Editar</button>
-                                        <button type="button" className="btn btn-sm btn-outline-danger mb-2 mb-md-0" onClick={() => deleteClient(client.idCliente)}>X</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )) :
+                        {clients.length ?
+                            renderClients(clients)
+                        :
                         <div>
                             <h5 className="text-secondary text-center py-4">No hay ningun cliente todavia.</h5>
-                        </div>}
+                        </div>
+                        }
                     </div>
                 </div>
             </div>
