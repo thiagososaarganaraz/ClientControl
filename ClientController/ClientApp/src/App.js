@@ -139,10 +139,6 @@ const App = () => {
         setSort(!sort);
     }
 
-    const handleSearch = (e) => {
-        setSearch(e.target.value);
-    }
-
     //Muestra todos los clientes al primer renderizado
     useEffect(() => {
         showClients();
@@ -156,10 +152,12 @@ const App = () => {
 
     //Muestra los clientes encontrados al usar el buscador
     useEffect(() => {
+        const coincidences = [];
         if (search) {
             clients.map((e) => {
-                if(e.nombre.toLowerCase().includes(search.toLowerCase())) setFound(e);
+                if(e.nombre.toLowerCase().includes(search.toLowerCase())) coincidences.push(e);
             })
+            setFound(coincidences);
             console.log(found);
         }
     }, [search]);
@@ -182,13 +180,12 @@ const App = () => {
                 /> : ""}
                 {modal ? <NewClient showClients={showClients} /> : ""}
                 <div className="col-12 pt-4">
-                    <input className="form-control mb-2" placeholder="Buscar por nombre..." onChange={(e)=> handleSearch(e)} value={search}/>
+                    <input className="form-control mb-2" placeholder="Buscar por nombre..." onChange={(e)=> setSearch(e.target.value)} value={search}/>
                     <nav className="d-flex justify-content-center">
                         <button type="button" className="btn border text-light mb-2" onClick={handleSort}>Ordenar por: <b>{sort ? "vencimiento" : "nombre"}</b></button>
                     </nav>
                     <div className="list-group">
-                        {clients.length ?
-                            renderClients(clients)
+                        {clients?.length ? (found.length ? renderClients(found) : (search.length ? <h5 className="text-secondary text-center py-4">No se encontraron coincidencias.</h5> : renderClients(clients)))
                         :
                         <div>
                             <h5 className="text-secondary text-center py-4">No hay ningun cliente todavia.</h5>
