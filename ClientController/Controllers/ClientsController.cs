@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ClientController.Models;
+using System.Security.Claims;
 
 namespace ClientController.Controllers
 {
@@ -9,19 +10,40 @@ namespace ClientController.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly DBPRUEBASContext _dbcontext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ClientsController(DBPRUEBASContext context)
+        public ClientsController(DBPRUEBASContext context, IHttpContextAccessor httpContextAccessor)
         {
             _dbcontext = context;
+            _httpContextAccessor = httpContextAccessor;
         }
-        
+
         [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
-            List<Cliente> lista = _dbcontext.Clientes.OrderBy(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
+            /*
+            var authHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            if (authHeader.Count > 0 && authHeader[0].StartsWith("Bearer "))
+            {
+                var token = authHeader[0].Substring("Bearer ".Length);
+                var user = _dbcontext.Usuarios.SingleOrDefault(u => u.Password == token);
+                if (user == null) return StatusCode(StatusCodes.Status404NotFound, "No se encontró ningun usuario con sus credenciales.");
+                List<Cliente> lista = _dbcontext.Clientes.OrderBy(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
+                return StatusCode(StatusCodes.Status200OK, lista);
+            }
 
+            return StatusCode(StatusCodes.Status401Unauthorized, "No posee permisos para realizar la solicitud.");*/
+
+            List<Cliente> lista = _dbcontext.Clientes.OrderBy(c => c.Vencimiento).ThenBy(c => c.Nombre).ToList();
             return StatusCode(StatusCodes.Status200OK, lista);
+
+            //No se están encontrando CLAIMS
+            //var identity = HttpContext.User.Identity;
+            //return StatusCode(StatusCodes.Status200OK, identity);
+            //
+            //var rToken = Jwt.tokenValidator(identity, _dbcontext);
+            //return StatusCode(StatusCodes.Status200OK, rToken);
         }
 
         [HttpPost]

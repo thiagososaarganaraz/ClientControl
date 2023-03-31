@@ -102,7 +102,16 @@ const Home = () => {
     }
 
     const showClients = async () => {
+        console.log("TOKEN: ", localStorage.getItem("jwt"));
+        const token = localStorage.getItem("jwt");
+        const config = {
+            headers: {
+                'Authorization' : `Bearer ${token}`
+            }
+        }
         const res = await axios("api/clients/Lista");
+        console.log(res);
+        /*
         if (res.status === 200) {
             if (sort) {
                 //Cuando sort es true solo guardamos la lista que trajimos, la cual por defecto está ordenada por la clave vencimiento
@@ -112,8 +121,7 @@ const Home = () => {
                 const sorted = res.data.sort((a, b) => a.nombre.toLowerCase() < b.nombre.toLowerCase() ? -1 : ((b.nombre.toLowerCase() > a.nombre.toLowerCase()) ? 1 : 0));
                 setClients(sorted);
             }
-        };
-
+        };*/
     }
 
     const deleteClient = async (id) => {
@@ -137,7 +145,6 @@ const Home = () => {
     const handleSort = () => {
         setSort(!sort);
     }
-
 
     //Muestra todos los clientes al primer renderizado
     useEffect(() => {
@@ -163,7 +170,7 @@ const Home = () => {
     }, [search]);
 
     return (
-        <div className="container bg-dark p-4 vw-100">
+        <div className="container bg-dark p-4 vw-100 overflow-hidden">
             <div className="bg-light text-center rounded-pill p-2 mb-4">
                 <h2 className="text-dark">Prestamos</h2>
             </div>

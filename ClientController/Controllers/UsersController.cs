@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ClientController.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ClientController.Controllers
 {
@@ -9,68 +13,66 @@ namespace ClientController.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private IConfiguration _configuration;
         private readonly DBPRUEBASContext _dbcontext;
-
-        public UsersController(DBPRUEBASContext dbcontext)        {
+        public UsersController(DBPRUEBASContext dbcontext, IConfiguration configuration)        {
             _dbcontext = dbcontext;
+            _configuration = configuration;
         }
 
         [HttpGet]
-        [Route("GetAllUsers")]
+        [Route("GetUsers")]
         public async Task<IActionResult> GetUsers()
         {
             List<Usuario> users = _dbcontext.Usuarios.OrderBy(u => u.IdUsuario).ToList();
-
             return StatusCode(StatusCodes.Status200OK, users);
         }
 
-        [HttpGet]
-        [Route("User/{id:int}")]
-        public async Task<IActionResult> GetUser(int id)
-        {
-            Usuario user = _dbcontext.Usuarios.Find(id);
-            if (user == null) return NotFound();
-;           return Ok(user);
-        }
-
+        /*
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar([FromBody] Usuario request)
+        [Route("SignUp")]
+        public async Task<IActionResult> SignUp([FromBody] Usuario request)
         {
+            Usuario user = _dbcontext.Usuarios.SingleOrDefault(u => u.NombreUsuario == request.NombreUsuario);
+            if (user != null) return StatusCode(StatusCodes.Status302Found, "El usuario ya existe.");
+            request.Password = Encrypt.GetSHA256(request.Password);
             await _dbcontext.Usuarios.AddAsync(request);
             await _dbcontext.SaveChangesAsync();
             return StatusCode(StatusCodes.Status200OK, "ok");
         }
+        */
 
-        [HttpDelete]
-        [Route("Eliminar/{id:int}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpGet]
+        [Route("Login/{NombreUsuario}/{Password}")]
+        public ActionResult<List<Usuario>> LogIn(string NombreUsuario, string Password)
         {
-            Usuario user = _dbcontext.Usuarios.Find(id);
-            _dbcontext.Usuarios.Remove(user);
-            await _dbcontext.SaveChangesAsync();
-            return StatusCode(StatusCodes.Status200OK, "ok");
-        }
+            string ePassword = Encrypt.GetSHA256(Password);
+            Usuario user = _dbcontext.Usuarios.SingleOrDefault(u => u.NombreUsuario == NombreUsuario && u.Password == ePassword);
+            if (user == null) return StatusCode(StatusCodes.Status401Unauthorized, "Datos incorrectos");
 
-        [HttpPut]
-        [Route("Modificar/{id:int}")]
-        public async Task<IActionResult> Modificar(int id, [FromBody] Usuario userNuevo)
-        {
-            Usuario user = _dbcontext.Usuarios.Find(id);
-            if (user == null) return NotFound();
-            _dbcontext.Entry(user).CurrentValues.SetValues(userNuevo);
-            await _dbcontext.SaveChangesAsync();
-            return Ok(user);
-        }
+            return Ok(user.Password);
 
-        [HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] Usuario request)
-        {
-            Usuario user = _dbcontext.Usuarios.Find(request.IdUsuario);
-            if (user == null) return NotFound();
-            if (user.NombreUsuario != request.NombreUsuario || user.Password != request.Password) return StatusCode(StatusCodes.Status401Unauthorized, "User o password incorrectos.");
-            return Ok("Se logueó con exito");
+            /*var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                new Claim("usuario", user.NombreUsuario)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims);
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
+            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                claims: claimsIdentity.Claims,
+                expires: DateTime.Now.AddDays(3),
+                signingCredentials: signIn
+            );
+
+            return StatusCode(StatusCodes.Status200OK, new JwtSecurityTokenHandler().WriteToken(token));*/
         }
     }
 }
